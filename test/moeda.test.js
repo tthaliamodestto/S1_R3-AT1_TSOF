@@ -64,7 +64,7 @@ describe("Biblioteca de Moedas", () => {
 
 
     //3
-    it("deve buscar a cotação do euro corretamente", async () => {
+    it("deve buscar a cotação do CAD corretamente", async () => {
 
         axios.get.mockResolvedValueOnce({
             data: {
@@ -87,7 +87,7 @@ describe("Biblioteca de Moedas", () => {
     });
 
     //4
-    it("deve buscar a cotação do euro corretamente", async () => {
+    it("deve buscar a cotação do CHF corretamente", async () => {
 
         axios.get.mockResolvedValueOnce({
             data: {
@@ -110,7 +110,7 @@ describe("Biblioteca de Moedas", () => {
     });
 
      //5
-    it("deve buscar a cotação do euro corretamente", async () => {
+    it("deve buscar a cotação do CNY corretamente", async () => {
 
         axios.get.mockResolvedValueOnce({
             data: {
@@ -135,7 +135,7 @@ describe("Biblioteca de Moedas", () => {
         
     
     //6
-    it("deve buscar a cotação do euro corretamente", async () => {
+    it("deve buscar a cotação do CZK corretamente", async () => {
 
         axios.get.mockResolvedValueOnce({
             data: {
@@ -160,7 +160,7 @@ describe("Biblioteca de Moedas", () => {
 
 
 //7
-    it("deve buscar a cotação do euro corretamente", async () => {
+    it("deve buscar a cotação do DKK corretamente", async () => {
 
         axios.get.mockResolvedValueOnce({
             data: {
@@ -185,7 +185,7 @@ describe("Biblioteca de Moedas", () => {
 
     
 //8
-    it("deve buscar a cotação do euro corretamente", async () => {
+    it("deve buscar a cotação do HKD corretamente", async () => {
 
         axios.get.mockResolvedValueOnce({
             data: {
@@ -208,7 +208,7 @@ describe("Biblioteca de Moedas", () => {
     });
 
     //9
-    it("deve buscar a cotação do euro corretamente", async () => {
+    it("deve buscar a cotação do HUF corretamente", async () => {
 
         axios.get.mockResolvedValueOnce({
             data: {
@@ -233,7 +233,7 @@ describe("Biblioteca de Moedas", () => {
 
 
       //10 - erro
-    it.only("deve buscar a cotação do euro corretamente", async () => {
+    it.only("deve buscar a cotação do NNN corretamente", async () => {
 
         axios.get.mockResolvedValueOnce({
             data: {
@@ -245,6 +245,50 @@ describe("Biblioteca de Moedas", () => {
             'Moeda destino não encontrada na resposta da API.'
         );
     });
+
+    
+
+it("deve converter o valor corretamente utilizando a cotação", async () => {
+    axios.get.mockResolvedValueOnce({
+        data: {
+            rates: { BRL: 5.00 }
+        }
+    });
+
+    const valorConvertido = await converterMoeda("USD", "BRL", 100);
+
+    expect(valorConvertido).toBe(500); // 100 * 5.00
+    expect(axios.get).toHaveBeenCalledWith('https://api.frankfurter.app/latest', {
+        params: { from: 'USD', to: 'BRL' }
+    });
+});
+
+it("deve lançar erro ao tentar converter valor zero ou negativo", async () => {
+    await expect(converterMoeda("USD", "BRL", 0)).rejects.toThrow(
+        "O valor para conversão deve ser maior que zero."
+    );
+
+    await expect(converterMoeda("USD", "BRL", -50)).rejects.toThrow(
+        "O valor para conversão deve ser maior que zero."
+    );
+});
+
+
+it("deve lançar erro quando a resposta da API não contiver o objeto 'rates'", async () => {
+    axios.get.mockResolvedValueOnce({
+        data: {}
+    });
+
+    await expect(buscarCotacao("USD", "XYZ")).rejects.toThrow(
+        "Moeda destino não encontrada na resposta da API."
+    );
+});
+
+it("deve capturar e repassar falhas de rede da requisição HTTP", async () => {
+    axios.get.mockRejectedValueOnce(new Error("Network Error"));
+
+    await expect(buscarCotacao("USD", "BRL")).rejects.toThrow("Network Error");
+});
 
 });
 
